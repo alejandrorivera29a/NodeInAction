@@ -3,12 +3,14 @@ var completedTasks = 0;
 var tasks = [];
 var wordCounts = {};
 var filesDir = './serial_paralelle/word_counter_files'
+var delay = 0;
 
 // Paralelle flow control
+console.log(alb);
 
 function checkIfComplete() {
     completedTasks++;
-    if(completedTasks == tasks.lenght) {
+    if(completedTasks == tasks.length) {
         for(var i in wordCounts) {
             console.log(i + ': ' + wordCounts[i]);
         }
@@ -34,11 +36,21 @@ fs.readdir(filesDir, function(err, files) {
         var task = (function(file) {
             return function() {
                 fs.readFile(file, function(err, text) {
-                    console.log(text.toString());
                     if(err) throw err;
                     countWordsInText(text);
                     checkIfComplete();
                 });
+            }
+        })(filesDir + '/' + files[i]);
+        var task = (function(file) {
+            return function() { 
+                delay += 1000;
+                setTimeout(function() {
+                    fs.readFile(file, function(err, text) {
+                        if(err) throw err;
+                        countWordsInText(text);
+                        checkIfComplete();
+                    })}, delay);
             }
         })(filesDir + '/' + files[i]);
         tasks.push(task);
